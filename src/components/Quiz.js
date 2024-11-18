@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Question from './Question';
 import Result from './Result';
+import Progress from './Progress';
 import './Quiz.css';
 
 const questions = [
@@ -60,14 +61,34 @@ const questions = [
     },
 ];
 
+var answer = [];
+
 function Quiz() {
     const [answers, setAnswers] = useState(Array(questions.length).fill(null));
     const [showResult, setShowResult] = useState(false);
     const [score, setScore] = useState(0);
+    const [answerCount, setAnswersCount] = useState(answer.length)
+    const [disableFlag, setDisableFlag] = useState(false)
+
+    // timer
+    setTimeout(
+            ()=>{
+                setDisableFlag(true);
+            }, 2 *60 * 1000
+    )
+
+    const updateProgress = (questionIndex) => {
+        if(!answer.includes(questionIndex)){
+            answer.push(questionIndex);
+            let progress = answer.length/6 * 100;
+            setAnswersCount(progress);
+        }
+    }
 
     const handleAnswerOptionClick = (questionIndex, isCorrect) => {
         const newAnswers = [...answers];
         newAnswers[questionIndex] = isCorrect;
+        updateProgress(questionIndex);
         setAnswers(newAnswers);
     };
 
@@ -76,13 +97,14 @@ function Quiz() {
         setScore(newScore);
         setShowResult(true);
     };
-
+    
     return (
         <div className="quiz">
             {showResult ? (
                 <Result score={score} totalQuestions={questions.length} />
             ) : (
                 <div>
+                    <Progress width={`${answerCount}%`}/>
                     {questions.map((question, index) => (
                         <Question
                             key={index}
@@ -91,7 +113,7 @@ function Quiz() {
                             handleAnswerOptionClick={handleAnswerOptionClick}
                         />
                     ))}
-                    <button className="submit-button" onClick={handleSubmit}>
+                    <button className="submit-button" onClick={handleSubmit} disabled={disableFlag}>
                         Submit
                     </button>
                 </div>
